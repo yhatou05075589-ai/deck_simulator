@@ -1,0 +1,142 @@
+<title>デッキシミュレーター</title>
+<link rel="stylesheet" href="deck_simulator.css">
+
+<div class="app">
+
+  <div class="masthead">
+    <div>
+      <p class="masthead-eyebrow">Deck Probability Tool</p>
+      <h1 class="masthead-title">デッキシミュレーター</h1>
+    </div>
+  </div>
+
+  <div class="stat-bar">
+    <div class="stat-field">
+      <label for="deckCount">デッキ枚数</label>
+      <div class="stat-input-wrap">
+        <input id="deckCount" type="number" inputmode="numeric" value="40" min="0">
+        <span class="stat-unit">枚</span>
+      </div>
+    </div>
+    <div class="stat-field">
+      <label for="trumpCount">初手枚数</label>
+      <div class="stat-input-wrap">
+        <input id="trumpCount" type="number" inputmode="numeric" value="3" min="0">
+        <span class="stat-unit">枚</span>
+      </div>
+    </div>
+    <div class="stat-field">
+      <label for="resourceCount">リソース枚数</label>
+      <div class="stat-input-wrap">
+        <input id="resourceCount" type="number" inputmode="numeric" value="8" min="0">
+        <span class="stat-unit">枚</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-panel">
+    <p class="panel-label">カード登録</p>
+    <div class="card-grid">
+
+      <div class="card-col" data-type="key" style="--dot:var(--key)">
+        <div class="col-head"><span class="col-dot"></span><span class="col-title">キーカード</span></div>
+        <div class="card-records" data-list="key">
+          <p class="empty-hint" data-empty="key">未登録</p>
+        </div>
+      </div>
+
+      <div class="card-col" data-type="search" style="--dot:var(--search)">
+        <div class="col-head"><span class="col-dot"></span><span class="col-title">サーチカード</span></div>
+        <div class="card-records" data-list="search">
+          <p class="empty-hint" data-empty="search">未登録</p>
+        </div>
+      </div>
+
+      <div class="card-col" data-type="draw" style="--dot:var(--draw)">
+        <div class="col-head"><span class="col-dot"></span><span class="col-title">ドローカード</span></div>
+        <div class="card-records" data-list="draw">
+          <p class="empty-hint" data-empty="draw">未登録</p>
+        </div>
+      </div>
+
+      <div class="priority-col">
+        <div class="col-head"><span class="col-dot"></span><span class="col-title">優先順位</span></div>
+        <div class="priority-list" data-list="priority">
+          <p class="empty-hint" data-empty="priority">カードを追加すると表示されます</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="action-row">
+    <button class="btn btn-primary" id="addBtn">カード追加</button>
+    <button class="btn" id="calcBtn">計算</button>
+    <button class="btn" id="adviceBtn">AIアドバイス</button>
+  </div>
+
+  <div class="advice-section">
+    <div class="advice-label-row">
+      <span class="col-dot"></span>
+      <h2 class="advice-label">計算結果</h2>
+    </div>
+    <div class="advice-scroll is-empty" id="calcOutput">「計算」を実行すると結果がここに表示されます</div>
+  </div>
+
+  <div class="advice-section">
+    <div class="advice-label-row">
+      <span class="col-dot"></span>
+      <h2 class="advice-label">AIアドバイス</h2>
+    </div>
+    <div class="advice-scroll is-empty" id="adviceBox">「AIアドバイス」を実行するとアドバイスがここに表示されます</div>
+  </div>
+
+</div>
+
+<div class="modal-backdrop" id="typeModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="typeModalTitle">
+    <h2 id="typeModalTitle" class="modal-title">カード種別を選択</h2>
+    <div class="type-choice-list">
+      <button type="button" class="type-choice" data-type="key" style="--dot:var(--key)">
+        <span class="col-dot"></span>キーカード
+      </button>
+      <button type="button" class="type-choice" data-type="search" style="--dot:var(--search)">
+        <span class="col-dot"></span>サーチカード
+      </button>
+      <button type="button" class="type-choice" data-type="draw" style="--dot:var(--draw)">
+        <span class="col-dot"></span>ドローカード
+      </button>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="typeModalCancel">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="registerModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="registerModalTitle">
+    <div class="modal-header-row">
+      <span class="col-dot" id="registerModalDot"></span>
+      <h2 id="registerModalTitle" class="modal-title">カードを登録</h2>
+    </div>
+    <label class="modal-field-label" for="registerNameInput">カード名</label>
+    <input id="registerNameInput" type="text" class="modal-input" placeholder="カード名を入力">
+    <p class="modal-error" id="registerModalError">カード名を入力してください</p>
+
+    <label class="modal-field-label" for="registerCountInput">枚数（仮）</label>
+    <input id="registerCountInput" type="number" class="modal-input" min="1" value="1">
+
+    <label class="modal-field-label" for="registerEffectInput">効果テキスト（仮）</label>
+    <textarea id="registerEffectInput" class="modal-input modal-textarea" placeholder="カードの効果を入力" rows="3"></textarea>
+
+    <label class="modal-field-label" for="registerMemoInput">メモ（仮）</label>
+    <input id="registerMemoInput" type="text" class="modal-input" placeholder="任意のメモ">
+
+    <div class="modal-actions">
+      <button type="button" class="btn" id="registerModalBack">戻る</button>
+      <button type="button" class="btn btn-primary" id="registerModalSubmit">登録</button>
+    </div>
+  </div>
+</div>
+
+<script src="deck_simulator.js"></script>
