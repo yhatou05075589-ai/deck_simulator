@@ -176,56 +176,77 @@ document.addEventListener('keydown', (e) => {
   else if(!typeModal.hidden) closeTypeModal();
 });
 
-function combinationLog(n, k){
-  if(k < 0 || k > n) return -Infinity;
-  let res = 0;
-  for(let i = 0; i < k; i++){
-    res += Math.log(n - i) - Math.log(i + 1);
-  }
-  return res;
+// ---------- server-side calculation / advice ----------
+function buildDeckState(){
+  return {
+    deckCount: parseInt(document.getElementById('deckCount').value, 10) || 0,
+    handCount: parseInt(document.getElementById('trumpCount').value, 10) || 0,
+    resourceCount: parseInt(document.getElementById('resourceCount').value, 10) || 0,
+    records: columnRecords,
+    priority: priorityRecords,
+  };
 }
 
-document.getElementById('calcBtn').addEventListener('click', () => {
-  const deck = parseInt(document.getElementById('deckCount').value, 10) || 0;
-  const hand = parseInt(document.getElementById('trumpCount').value, 10) || 0;
-  const resource = parseInt(document.getElementById('resourceCount').value, 10) || 0;
-  const keyCount = columnRecords.key.length;
+function formatCalcResult(result){
+  const lines = [];
+  lines.push(`デッキ枚数: ${result.deckCount}枚`);
+  lines.push(`初手枚数: ${result.handCount}枚`);
+  lines.push(`リソース枚数: ${result.resourceCount}枚`);
+  lines.push('');
+  lines.push('登録カード数:');
+  Object.keys(TYPE_META).forEach(type => {
+    const list = result.records?.[type] ?? [];
+    lines.push(`  ${TYPE_META[type].fullLabel}: ${list.length}種類`);
+  });
+
+  const priority = [...(result.priority ?? [])].sort((a, b) => a.order - b.order);
+  lines.push('');
+  if(priority.length === 0){
+    lines.push('優先順位: 未設定');
+  } else {
+    lines.push('優先順位:');
+    priority.forEach(rec => {
+      const name = rec.name?.trim() ? rec.name : '（未入力）';
+      lines.push(`  ${rec.order}. ${name}（${TYPE_META[rec.type].fullLabel}） ${rec.count}枚`);
+    });
+  }
+  return lines.join('\n');
+}
+
+document.getElementById('calcBtn').addEventListener('click', async () => {
   const out = document.getElementById('calcOutput');
   out.classList.remove('is-empty');
-
-  if(deck <= 0 || hand < 0 || hand > deck){
-    out.textContent = 'デッキ枚数・初手枚数を確認してください。';
-    return;
+  out.textContent = '計算中...';
+  try {
+    const res = await fetch('/api/calculate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(buildDeckState()),
+    });
+    const data = await res.json();
+    out.textContent = data.result != null
+      ? formatCalcResult(data.result)
+      : '（計算処理は未実装です）';
+  } catch (err) {
+    out.textContent = '計算中にエラーが発生しました。';
   }
-
-  const logNoKeyInHand = combinationLog(deck - keyCount, hand) - combinationLog(deck, hand);
-  const pAtLeastOne = (1 - Math.exp(logNoKeyInHand)) * 100;
-
-  const registered = priorityRecords.length;
-
-  out.textContent =
-`デッキ枚数: ${deck}枚 / 初手枚数: ${hand}枚 / リソース枚数: ${resource}枚
-登録カード数: ${registered}枚（優先順位リスト参照）
-
-初手 ${hand} 枚でキーカードを1枚以上引く確率: ${pAtLeastOne.toFixed(1)}%
-（キーカード登録数: ${keyCount}枚、非復元抽出）`;
 });
 
-document.getElementById('adviceBtn').addEventListener('click', () => {
+document.getElementById('adviceBtn').addEventListener('click', async () => {
   const box = document.getElementById('adviceBox');
   box.classList.remove('is-empty');
-  const hand = parseInt(document.getElementById('trumpCount').value, 10) || 0;
-  const deck = parseInt(document.getElementById('deckCount').value, 10) || 0;
-  const top = [...priorityRecords].sort((a,b) => a.order - b.order)[0];
-  const lines = [];
-  lines.push(`現在の構成はデッキ${deck}枚に対し初手${hand}枚です。`);
-  if(top){
-    lines.push(`優先順位1位に設定されている「${top.name}」（${TYPE_META[top.type].label}）を初手で確保できるかが序盤の安定性を左右します。`);
-  } else {
-    lines.push('優先順位が未設定です。まずキーカードを登録し、優先順位を割り当ててください。');
+  box.textContent = '生成中...';
+  try {
+    const res = await fetch('/api/advice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(buildDeckState()),
+    });
+    const data = await res.json();
+    box.textContent = data.result?.result ?? '（AIアドバイス生成処理は未実装です）';
+  } catch (err) {
+    box.textContent = 'アドバイス取得中にエラーが発生しました。';
   }
-  lines.push('キーカードの枚数がやや少ない場合は、サーチカードの優先順位を引き上げてアクセス率を補うことを推奨します。');
-  box.textContent = lines.join('\n\n');
 });
 
 renderColumn('key');

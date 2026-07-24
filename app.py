@@ -1,0 +1,62 @@
+from flask import Flask, jsonify, render_template, request
+
+app = Flask(__name__)
+
+
+def calculate_probability(deck_count, hand_count, resource_count, records, priority):
+    """
+    デッキ枚数・初手枚数・リソース枚数・登録カード情報から確率を計算する。
+    """
+    # TODO: 計算処理を実装する。いまは受け取った情報をそのまま返す。
+    return {
+        "deckCount": deck_count,
+        "handCount": hand_count,
+        "resourceCount": resource_count,
+        "records": records,
+        "priority": priority,
+    }
+
+
+def generate_advice(deck_count, hand_count, resource_count, records, priority):
+    """
+    現在のデッキ構成からAIアドバイスを生成する。
+    """
+    # TODO: AIアドバイス生成処理を実装する
+    return {
+        "result": "AI アドバイスの結果はここに表示される予定です。"
+    }
+
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+
+@app.route("/api/calculate", methods=["POST"])
+def calculate():
+    data = request.get_json(silent=True) or {}
+    result = calculate_probability(
+        deck_count=data.get("deckCount", 0),
+        hand_count=data.get("handCount", 0),
+        resource_count=data.get("resourceCount", 0),
+        records=data.get("records", {}),
+        priority=data.get("priority", []),
+    )
+    return jsonify({"result": result})
+
+
+@app.route("/api/advice", methods=["POST"])
+def advice():
+    data = request.get_json(silent=True) or {}
+    result = generate_advice(
+        deck_count=data.get("deckCount", 0),
+        hand_count=data.get("handCount", 0),
+        resource_count=data.get("resourceCount", 0),
+        records=data.get("records", {}),
+        priority=data.get("priority", []),
+    )
+    return jsonify({"result": result})
+
+
+if __name__ == "__main__":
+    app.run(debug=True)

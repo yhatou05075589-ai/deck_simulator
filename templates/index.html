@@ -1,5 +1,12 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>デッキシミュレーター</title>
-<link rel="stylesheet" href="deck_simulator.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='deck_simulator.css') }}">
+</head>
+<body>
 
 <div class="app">
 
@@ -139,4 +146,6 @@
   </div>
 </div>
 
-<script src="deck_simulator.js"></script>
+<script src="{{ url_for('static', filename='deck_simulator.js') }}"></script>
+</body>
+</html>
