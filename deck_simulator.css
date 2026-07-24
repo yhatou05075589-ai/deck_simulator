@@ -181,19 +181,30 @@ a, button, input{ font-family: inherit; }
   border-radius: 6px;
   padding: 6px 8px;
   font-size: 13px;
+  cursor: pointer;
 }
-.card-record input{
+.card-record .name{
   flex:1;
   min-width:0;
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid transparent;
   color: var(--text);
   font-size: 13px;
-  padding: 2px 0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
 }
-.card-record input::placeholder{ color: var(--text-faint); }
-.card-record input:focus{ border-bottom-color: var(--foil); }
+.card-record .count{
+  flex:none;
+  width: 44px;
+  background: var(--panel-inset);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--foil-bright);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align:center;
+  font-size: 13px;
+  padding: 3px 0;
+}
 .card-record .del{
   flex:none;
   background:none;

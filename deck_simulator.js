@@ -22,17 +22,28 @@ function renderColumn(type){
   records.forEach(rec => {
     const row = document.createElement('div');
     row.className = 'card-record';
-    row.innerHTML = `<input type="text" placeholder="カード名を入力" value="${escapeAttr(rec.name)}"><button class="del" aria-label="削除">×</button>`;
-    row.querySelector('input').addEventListener('input', (e) => {
-      rec.name = e.target.value;
-      renderPriority();
+    const displayName = rec.name.trim() === '' ? '（未入力）' : escapeHtml(rec.name);
+    row.innerHTML = `
+      <span class="name">${displayName}</span>
+      <input type="number" class="count" value="${rec.count}" min="1" aria-label="枚数">
+      <button class="del" aria-label="削除">×</button>
+    `;
+    row.querySelector('.count').addEventListener('change', (e) => {
+      const v = parseInt(e.target.value, 10);
+      rec.count = Number.isFinite(v) && v >= 1 ? v : rec.count;
+      e.target.value = rec.count;
     });
-    row.querySelector('.del').addEventListener('click', () => {
+    row.querySelector('.del').addEventListener('click', (e) => {
+      e.stopPropagation();
       columnRecords[type] = columnRecords[type].filter(r => r.id !== rec.id);
       const idx = priorityRecords.findIndex(r => r.id === rec.id);
       if(idx !== -1) priorityRecords.splice(idx, 1);
       renderColumn(type);
       renderPriority();
+    });
+    row.addEventListener('click', (e) => {
+      if(e.target.closest('input') || e.target.closest('button')) return;
+      openRegisterModal(type, rec);
     });
     listEl.appendChild(row);
   });
@@ -71,9 +82,6 @@ function renderPriority(){
 function escapeHtml(s){
   return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-function escapeAttr(s){
-  return escapeHtml(s).replace(/"/g, '&quot;');
-}
 
 // ---------- add-card modal flow ----------
 const typeModal = document.getElementById('typeModal');
@@ -86,6 +94,7 @@ const registerEffectInput = document.getElementById('registerEffectInput');
 const registerMemoInput = document.getElementById('registerMemoInput');
 const registerModalError = document.getElementById('registerModalError');
 let pendingType = null;
+let editingId = null;
 
 function openTypeModal(){
   typeModal.hidden = false;
@@ -93,15 +102,16 @@ function openTypeModal(){
 }
 function closeTypeModal(){ typeModal.hidden = true; }
 
-function openRegisterModal(type){
+function openRegisterModal(type, rec = null){
   pendingType = type;
+  editingId = rec ? rec.id : null;
   const meta = TYPE_META[type];
-  registerModalTitle.textContent = `${meta.fullLabel}を登録`;
+  registerModalTitle.textContent = rec ? `${meta.fullLabel}を編集` : `${meta.fullLabel}を登録`;
   registerModalDot.style.setProperty('--dot', `var(${meta.colorVar})`);
-  registerNameInput.value = '';
-  registerCountInput.value = 1;
-  registerEffectInput.value = '';
-  registerMemoInput.value = '';
+  registerNameInput.value = rec ? rec.name : '';
+  registerCountInput.value = rec ? rec.count : 1;
+  registerEffectInput.value = rec ? rec.effect : '';
+  registerMemoInput.value = rec ? rec.memo : '';
   registerModalError.classList.remove('is-visible');
   closeTypeModal();
   registerModal.hidden = false;
@@ -110,6 +120,7 @@ function openRegisterModal(type){
 function closeRegisterModal(){
   registerModal.hidden = true;
   pendingType = null;
+  editingId = null;
 }
 
 document.getElementById('addBtn').addEventListener('click', openTypeModal);
@@ -134,18 +145,22 @@ document.getElementById('registerModalSubmit').addEventListener('click', () => {
     return;
   }
   const type = pendingType;
-  order += 1;
-  const rec = {
-    id: `${type}-${order}`,
-    type,
-    name,
-    order,
-    count: parseInt(registerCountInput.value, 10) || 1,
-    effect: registerEffectInput.value.trim(),
-    memo: registerMemoInput.value.trim(),
-  };
-  columnRecords[type].push(rec);
-  priorityRecords.push(rec);
+  const count = parseInt(registerCountInput.value, 10) || 1;
+  const effect = registerEffectInput.value.trim();
+  const memo = registerMemoInput.value.trim();
+
+  if(editingId){
+    const rec = columnRecords[type].find(r => r.id === editingId);
+    rec.name = name;
+    rec.count = count;
+    rec.effect = effect;
+    rec.memo = memo;
+  } else {
+    order += 1;
+    const rec = { id: `${type}-${order}`, type, name, order, count, effect, memo };
+    columnRecords[type].push(rec);
+    priorityRecords.push(rec);
+  }
   renderColumn(type);
   renderPriority();
   closeRegisterModal();
