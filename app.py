@@ -3,7 +3,9 @@ from flask import Flask, jsonify, render_template, request
 app = Flask(__name__)
 
 
-def calculate_probability(deck_count, hand_count, resource_count, records, priority):
+def calculate_probability(
+    deck_count: int, hand_count: int, resource_count: int, records: dict, priority: list
+) -> dict:
     """
     デッキ枚数・初手枚数・リソース枚数・登録カード情報から確率を計算する。
     """
@@ -17,14 +19,14 @@ def calculate_probability(deck_count, hand_count, resource_count, records, prior
     }
 
 
-def generate_advice(deck_count, hand_count, resource_count, records, priority):
+def generate_advice(
+    deck_count: int, hand_count: int, resource_count: int, records: dict, priority: list
+) -> dict:
     """
     現在のデッキ構成からAIアドバイスを生成する。
     """
     # TODO: AIアドバイス生成処理を実装する
-    return {
-        "result": "AI アドバイスの結果はここに表示される予定です。"
-    }
+    return {"result": "AI アドバイスの結果はここに表示される予定です。"}
 
 
 @app.route("/")

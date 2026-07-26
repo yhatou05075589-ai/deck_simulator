@@ -1,0 +1,40 @@
+{
+  // ---- Python / pytest -----
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+  "python.terminal.activateEnvironment": true,
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.cwd": "${workspaceFolder}",
+  "python.testing.pytestArgs": ["tests"],
+
+  // ---- Python files -----
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.ruff": "always",
+      "source.organizeImports.ruff": "always"
+    }
+  },
+
+  // ---- Markdown files -----
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "editor.wordWrap": "on",
+    "editor.quickSuggestions": {
+      "other": "on",
+      "comments": "off",
+      "strings": "off"
+    }
+  },
+
+  // ---- Prettier -----
+  "prettier.proseWrap": "always",
+  "prettier.printWidth": 120,
+
+  // ---- スペルチェック (cSpell) -----
+  "cSpell.language": "en,ja",
+  "cSpell.enableFiletypes": ["markdown", "plaintext"],
+  "cSpell.diagnosticLevel": "Warning"
+}
