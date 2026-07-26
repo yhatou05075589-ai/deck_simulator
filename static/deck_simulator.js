@@ -90,9 +90,12 @@ const registerModalTitle = document.getElementById('registerModalTitle');
 const registerModalDot = document.getElementById('registerModalDot');
 const registerNameInput = document.getElementById('registerNameInput');
 const registerCountInput = document.getElementById('registerCountInput');
-const registerEffectInput = document.getElementById('registerEffectInput');
-const registerMemoInput = document.getElementById('registerMemoInput');
+const registerSearchRangeInput = document.getElementById('registerSearchRangeInput');
+const registerSearchActionInput = document.getElementById('registerSearchActionInput');
+const registerDrawCountInput = document.getElementById('registerDrawCountInput');
+const registerResourcePointInput = document.getElementById('registerResourcePointInput');
 const registerModalError = document.getElementById('registerModalError');
+const registerModalFields = registerModal.querySelectorAll('.modal-field');
 let pendingType = null;
 let editingId = null;
 
@@ -110,8 +113,13 @@ function openRegisterModal(type, rec = null){
   registerModalDot.style.setProperty('--dot', `var(${meta.colorVar})`);
   registerNameInput.value = rec ? rec.name : '';
   registerCountInput.value = rec ? rec.count : 1;
-  registerEffectInput.value = rec ? rec.effect : '';
-  registerMemoInput.value = rec ? rec.memo : '';
+  registerSearchRangeInput.value = rec ? rec.searchRange : 1;
+  registerSearchActionInput.value = rec ? rec.searchAction : 'bottom';
+  registerDrawCountInput.value = rec ? rec.drawCount : 1;
+  registerResourcePointInput.value = rec ? rec.resourcePoint : 0;
+  registerModalFields.forEach(field => {
+    field.hidden = !field.dataset.for.split(' ').includes(type);
+  });
   registerModalError.classList.remove('is-visible');
   closeTypeModal();
   registerModal.hidden = false;
@@ -146,18 +154,24 @@ document.getElementById('registerModalSubmit').addEventListener('click', () => {
   }
   const type = pendingType;
   const count = parseInt(registerCountInput.value, 10) || 1;
-  const effect = registerEffectInput.value.trim();
-  const memo = registerMemoInput.value.trim();
+  const typeFields = {};
+  if(type === 'search'){
+    typeFields.searchRange = parseInt(registerSearchRangeInput.value, 10) || 1;
+    typeFields.searchAction = registerSearchActionInput.value;
+    typeFields.resourcePoint = parseInt(registerResourcePointInput.value, 10) || 0;
+  } else if(type === 'draw'){
+    typeFields.drawCount = parseInt(registerDrawCountInput.value, 10) || 1;
+    typeFields.resourcePoint = parseInt(registerResourcePointInput.value, 10) || 0;
+  }
 
   if(editingId){
     const rec = columnRecords[type].find(r => r.id === editingId);
     rec.name = name;
     rec.count = count;
-    rec.effect = effect;
-    rec.memo = memo;
+    Object.assign(rec, typeFields);
   } else {
     order += 1;
-    const rec = { id: `${type}-${order}`, type, name, order, count, effect, memo };
+    const rec = { id: `${type}-${order}`, type, name, order, count, ...typeFields };
     columnRecords[type].push(rec);
     priorityRecords.push(rec);
   }

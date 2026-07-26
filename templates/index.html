@@ -126,18 +126,35 @@
       <span class="col-dot" id="registerModalDot"></span>
       <h2 id="registerModalTitle" class="modal-title">カードを登録</h2>
     </div>
-    <label class="modal-field-label" for="registerNameInput">カード名</label>
+    <label class="modal-field-label" for="registerNameInput">名称</label>
     <input id="registerNameInput" type="text" class="modal-input" placeholder="カード名を入力">
     <p class="modal-error" id="registerModalError">カード名を入力してください</p>
 
-    <label class="modal-field-label" for="registerCountInput">枚数（仮）</label>
+    <label class="modal-field-label" for="registerCountInput">枚数</label>
     <input id="registerCountInput" type="number" class="modal-input" min="1" value="1">
 
-    <label class="modal-field-label" for="registerEffectInput">効果テキスト（仮）</label>
-    <textarea id="registerEffectInput" class="modal-input modal-textarea" placeholder="カードの効果を入力" rows="3"></textarea>
+    <div class="modal-field" data-for="search">
+      <label class="modal-field-label" for="registerSearchRangeInput">サーチ範囲</label>
+      <input id="registerSearchRangeInput" type="number" class="modal-input" min="1" value="1">
+    </div>
 
-    <label class="modal-field-label" for="registerMemoInput">メモ（仮）</label>
-    <input id="registerMemoInput" type="text" class="modal-input" placeholder="任意のメモ">
+    <div class="modal-field" data-for="search">
+      <label class="modal-field-label" for="registerSearchActionInput">サーチ後の処理</label>
+      <select id="registerSearchActionInput" class="modal-input">
+        <option value="bottom">デッキ下に送る</option>
+        <option value="shuffle">デッキに戻しシャッフル</option>
+      </select>
+    </div>
+
+    <div class="modal-field" data-for="draw">
+      <label class="modal-field-label" for="registerDrawCountInput">ドロー枚数</label>
+      <input id="registerDrawCountInput" type="number" class="modal-input" min="1" value="1">
+    </div>
+
+    <div class="modal-field" data-for="search draw">
+      <label class="modal-field-label" for="registerResourcePointInput">使用リソースポイント</label>
+      <input id="registerResourcePointInput" type="number" class="modal-input" min="0" value="0">
+    </div>
 
     <div class="modal-actions">
       <button type="button" class="btn" id="registerModalBack">戻る</button>

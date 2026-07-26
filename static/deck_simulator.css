@@ -418,6 +418,15 @@ a, button, input{ font-family: inherit; }
   color: var(--text-muted);
   margin-bottom: -8px;
 }
+.modal-field{
+  display:flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.modal-field[hidden]{ display:none; }
+select.modal-input{
+  appearance: auto;
+}
 .modal-input{
   background: var(--panel-inset);
   border: 1px solid var(--line);
