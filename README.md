@@ -29,7 +29,7 @@
 
    ```
    python -m venv .venv
-   .venv/Scripts/Activate
+   source .venv/Scripts/Activate
    ```
 
 2. 依存パッケージをインストールする
