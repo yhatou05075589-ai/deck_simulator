@@ -14,8 +14,11 @@ def calculate_probability(
     simulation = simulate_probability(
         deck_count, hand_count, resource_count, records, priority
     )
+    # TODO: 確率に応じた評価文を生成する。いまは固定文字列。
+    evaluation = "計算結果の確率は妥当な数値です。"
     return {
         **simulation,
+        "evaluation": evaluation,
         "deckCount": deck_count,
         "handCount": hand_count,
         "resourceCount": resource_count,

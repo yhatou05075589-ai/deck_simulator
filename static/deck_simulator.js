@@ -232,8 +232,11 @@ function formatCalcResult(result){
 
 document.getElementById('calcBtn').addEventListener('click', async () => {
   const out = document.getElementById('calcOutput');
+  const evaluationBox = document.getElementById('evaluationBox');
   out.classList.remove('is-empty');
   out.textContent = '計算中...';
+  evaluationBox.classList.remove('is-empty');
+  evaluationBox.textContent = '評価中...';
   try {
     const res = await fetch('/api/calculate', {
       method: 'POST',
@@ -243,11 +246,14 @@ document.getElementById('calcBtn').addEventListener('click', async () => {
     const data = await res.json();
     if(!res.ok){
       out.textContent = data.error ?? '計算中にエラーが発生しました。';
+      evaluationBox.textContent = '';
       return;
     }
     out.textContent = formatCalcResult(data.result);
+    evaluationBox.textContent = data.result.evaluation;
   } catch (err) {
     out.textContent = '計算中にエラーが発生しました。';
+    evaluationBox.textContent = '';
   }
 });
 
