@@ -203,6 +203,9 @@ function buildDeckState(){
 
 function formatCalcResult(result){
   const lines = [];
+  lines.push(`成功確率: ${result.probability.toFixed(1)}%`);
+  lines.push(`試行回数: ${result.simulations}回（成功 ${result.success}回 / 失敗 ${result.failure}回）`);
+  lines.push('');
   lines.push(`デッキ枚数: ${result.deckCount}枚`);
   lines.push(`初手枚数: ${result.handCount}枚`);
   lines.push(`リソース枚数: ${result.resourceCount}枚`);
@@ -238,9 +241,11 @@ document.getElementById('calcBtn').addEventListener('click', async () => {
       body: JSON.stringify(buildDeckState()),
     });
     const data = await res.json();
-    out.textContent = data.result != null
-      ? formatCalcResult(data.result)
-      : '（計算処理は未実装です）';
+    if(!res.ok){
+      out.textContent = data.error ?? '計算中にエラーが発生しました。';
+      return;
+    }
+    out.textContent = formatCalcResult(data.result);
   } catch (err) {
     out.textContent = '計算中にエラーが発生しました。';
   }
