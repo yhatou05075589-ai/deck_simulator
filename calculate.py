@@ -109,7 +109,15 @@ def choose_next_action(hand, used_ids, remaining_resource):
 
 
 # =========================================================
+# カード名の羅列(履歴用)
+# =========================================================
+def _card_names(cards):
+    return "、".join(card["name"] for card in cards) if cards else "なし"
+
+
+# =========================================================
 # シミュレーション1回
+# 戻り値: (成功したか, 作業履歴の文字列リスト)
 # =========================================================
 def simulate_once(config):
 
@@ -132,6 +140,9 @@ def simulate_once(config):
 
     deck = deck[hand_count:]
 
+    # 作業履歴(文字列のリスト)
+    history = [f"初手: {_card_names(hand)}"]
+
     # -------------------------
     # 使用可能リソース
     # -------------------------
@@ -141,7 +152,8 @@ def simulate_once(config):
     # 初手にキーカード
     # -------------------------
     if any(card["type"] == "key" for card in hand):
-        return True
+        history.append("初手にキーカードがあった → 成功")
+        return True, history
 
     # 使用済みカード
     used_ids = set()
@@ -154,7 +166,10 @@ def simulate_once(config):
 
         # 使用できるカードがない
         if action_card is None:
-            return False
+            history.append(
+                f"使用できるカードがない(残りリソース {remaining_resource}) → 失敗"
+            )
+            return False, history
 
         # =================================================
         # カードを使用
@@ -182,9 +197,16 @@ def simulate_once(config):
             # 手札に追加
             hand.extend(drawn_cards)
 
+            history.append(
+                f"【ドロー】{action_card['name']}を使用"
+                f"(リソース -{action_card['resource_cost']} / 残り {remaining_resource})"
+                f" → {_card_names(drawn_cards)} を引いた"
+            )
+
             # キーカードを引いた
             if any(card["type"] == "key" for card in drawn_cards):
-                return True
+                history.append("キーカードを引いた → 成功")
+                return True, history
 
         # =================================================
         # サーチカード
@@ -196,11 +218,18 @@ def simulate_once(config):
 
             searched_cards = deck[:search_amount]
 
+            history.append(
+                f"【サーチ】{action_card['name']}を使用"
+                f"(リソース -{action_card['resource_cost']} / 残り {remaining_resource})"
+                f" → 山札の上から{search_amount}枚を確認: {_card_names(searched_cards)}"
+            )
+
             # -------------------------
             # キーカード発見
             # -------------------------
             if any(card["type"] == "key" for card in searched_cards):
-                return True
+                history.append("キーカードを発見した → 成功")
+                return True, history
 
             # =================================================
             # サーチ後処理
@@ -213,12 +242,14 @@ def simulate_once(config):
             # -------------------------
             if after_search == "bottom":
                 deck = deck[search_amount:] + searched_cards
+                history.append("  確認したカードを山札の下へ戻した")
 
             # -------------------------
             # シャッフル
             # -------------------------
             elif after_search == "shuffle":
                 random.shuffle(deck)
+                history.append("  山札をシャッフルした")
 
             else:
                 raise ValueError(f"未対応のサーチ後処理です: {after_search}")
@@ -281,11 +312,19 @@ def simulate_probability(
 
     success_count = 0
 
+    # 代表履歴(最初に見つかった成功例・失敗例を1件ずつ保持)
+    success_history = None
+    failure_history = None
+
     for _ in range(simulations):
-        result = simulate_once(config)
+        result, history = simulate_once(config)
 
         if result:
             success_count += 1
+            if success_history is None:
+                success_history = history
+        elif failure_history is None:
+            failure_history = history
 
     failure_count = simulations - success_count
 
@@ -296,4 +335,6 @@ def simulate_probability(
         "failure": failure_count,
         "simulations": simulations,
         "probability": probability,
+        "success_history": success_history or [],
+        "failure_history": failure_history or [],
     }

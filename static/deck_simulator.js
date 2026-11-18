@@ -227,6 +227,18 @@ function formatCalcResult(result){
       lines.push(`  ${rec.order}. ${name}（${TYPE_META[rec.type].fullLabel}） ${rec.count}枚`);
     });
   }
+
+  const appendHistory = (title, history) => {
+    lines.push('');
+    lines.push(`${title}:`);
+    if(!history || history.length === 0){
+      lines.push('  （該当する試行なし）');
+      return;
+    }
+    history.forEach((h, i) => lines.push(`  ${i + 1}. ${h}`));
+  };
+  appendHistory('作業履歴（成功例）', result.success_history);
+  appendHistory('作業履歴（失敗例）', result.failure_history);
   return lines.join('\n');
 }
 
